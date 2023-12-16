@@ -102,19 +102,7 @@ public class TextEditor extends JFrame implements ActionListener {
                             lexemes = Testing.separateCode(String.valueOf(file));
                             String codeLine = fileScanner.nextLine()+"\n";
                             sourceCode.append(codeLine); // this means na kung ano yung laman nung file na naupload, magrereflect sa text box
-                            
-                            if(e.getSource()==lexicalAnalyzer){
-
-                                tokens = Testing.lexicalAnalysis(lexemes);
-                            }
-                            else if(e.getSource() == syntaxAnalyzer){
-                                Testing.syntaxAnalysis(tokens, lexemes);
-                            }
-                            else if (e.getSource() == semanticsAnalyzer)
-                            {
-                                Testing.semanticAnalysis(tokens, lexemes);
-                            }
-
+                        
                         }
                     }
 
@@ -125,6 +113,16 @@ public class TextEditor extends JFrame implements ActionListener {
                     fileScanner.close();
                 }
             }
+        }
+         if(e.getSource()==lexicalAnalyzer){
+             tokens = Testing.lexicalAnalysis(lexemes);
+        }
+         if(e.getSource() == syntaxAnalyzer){
+             Testing.syntaxAnalysis(tokens, lexemes);
+        }
+         if (e.getSource() == semanticsAnalyzer)
+        {
+            Testing.semanticAnalysis(tokens, lexemes);
         }
     }
 }
