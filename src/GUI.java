@@ -1,36 +1,25 @@
 import javax.swing.*;
-import javax.swing.filechooser.FileNameExtensionFilter;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.io.*;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.Scanner;
-public class TextEditor extends JFrame implements ActionListener {
+import java.util.Objects;
 
-    JTextArea sourceCode;
+public class GUI extends JFrame implements ActionListener{
+
+    JTextArea sourceCode, textField;
     JScrollPane scrollPane;
-    JTextArea textField;
-    JButton fileOpener;
-    JButton lexicalAnalyzer;
-    JButton syntaxAnalyzer;
-    JButton semanticsAnalyzer;
-    JButton clear;
-    ImageIcon image;
-    ImageIcon image2;
-    JLabel label;
-    JLabel label2;
+    JButton fileOpener, lexicalAnalyzer, syntaxAnalyzer, semanticsAnalyzer, clear;
+    ImageIcon image, image2;
+    JLabel label, label2;
 
-    TextEditor(){
+    GUI(){
 
-        image = new ImageIcon(this.getClass().getResource("title.png"));
+        image = new ImageIcon(Objects.requireNonNull(this.getClass().getResource("title.png")));
         label = new JLabel(image);
         label.setLabelFor(null);
         label.setSize(200, 200);
 
-        image2 = new ImageIcon(this.getClass().getResource("down.png"));
+        image2 = new ImageIcon(Objects.requireNonNull(this.getClass().getResource("down.png")));
         label2 = new JLabel(image2);
         label2.setLabelFor(null);
         label2.setSize(200, 200);
@@ -50,7 +39,7 @@ public class TextEditor extends JFrame implements ActionListener {
         textField.setBounds(100, 25, 250, 50);
         textField.setLineWrap(true);
         textField.setWrapStyleWord(true);
-        textField.setFont(new Font("Monospaced", Font.CENTER_BASELINE, 15));
+        textField.setFont(new Font("Monospaced", Font.BOLD, 15));
         textField.setBackground(Color.black);
         textField.setForeground(Color.MAGENTA);
         textField.setEditable(false);
@@ -62,7 +51,7 @@ public class TextEditor extends JFrame implements ActionListener {
         sourceCode = new JTextArea();
         sourceCode.setLineWrap(true);
         sourceCode.setWrapStyleWord(true);
-        sourceCode.setFont(new Font("Monospaced", Font.CENTER_BASELINE, 15));
+        sourceCode.setFont(new Font("Monospaced", Font.BOLD, 15));
         sourceCode.setBackground(Color.black);
         sourceCode.setForeground(Color.white);
         //
@@ -139,58 +128,42 @@ public class TextEditor extends JFrame implements ActionListener {
 
         //------ file opener ----------------
 
-        List<String> lexemes = new ArrayList<>();
-        List<String> tokens = new ArrayList<>();
-
         if(e.getSource()==fileOpener){
-            JFileChooser fileChooser = new JFileChooser();
-            fileChooser.setCurrentDirectory(new File("."));
-            // txt file lang tinatanggap para di complicated
-            FileNameExtensionFilter filter = new FileNameExtensionFilter("txt files", "txt");
-            fileChooser.setFileFilter(filter);
-
-            // pang open nung pop up window pag pipili ng files
-            int response = fileChooser.showOpenDialog(null);
-
-            if(response == JFileChooser.APPROVE_OPTION){
-                // dito i-scan contents ng file
-                File file = new File(fileChooser.getSelectedFile().getAbsolutePath());
-                Scanner fileScanner = null;
-
-                try {
-                    fileScanner = new Scanner(file);
-                    if(file.isFile()){ // check if yung file na in-upload is valid
-                        while(fileScanner.hasNextLine()){
-                            // ewan pero dito na papasok yung seperation ng strings sa maeextract sa file
-                            lexemes = Testing.separateCode(String.valueOf(file));
-                            String codeLine = fileScanner.nextLine()+"\n";
-                            sourceCode.append(codeLine); // this means na kung ano yung laman nung file na naupload, magrereflect sa text box
-
-                        }
-                    }
-
-                } catch (FileNotFoundException ex) {
-                    throw new RuntimeException(ex);
-                }
-                finally {
-                    fileScanner.close();
-                }
-            }
+            String output = Compiler.openFile();
+            sourceCode.setText(output);
         }
         if(e.getSource()==lexicalAnalyzer){
 
-            tokens = Collections.singletonList(Testing.lexicalAnalysis(lexemes));
-            String result = Testing.lexicalAnalysis(lexemes);
-            updateTextField(result);
+            String result = Compiler.lexicalAnalysis();
+            String output;
+            //System.out.println(tokens);
+            if (result.equals("invalid")) {
+                output = "There is an invalid lexeme, cannot be put into token.";
+            } else {
+                output = "The code passed Lexical Analysis";
+            }
+            updateTextField(output);
         }
         if(e.getSource() == syntaxAnalyzer){
-            String result = Testing.syntaxAnalysis(tokens, lexemes);
-            updateTextField(result);
+            String result = Compiler.syntaxAnalysis();
+            String output;
+            if (result.equals("valid")) {
+                output = "The code passed Syntax Analysis.";
+            } else {
+                output = "Syntax incorrect!";
+            }
+            updateTextField(output);
         }
         if (e.getSource() == semanticsAnalyzer)
         {
-            Testing.semanticAnalysis(tokens, lexemes);
-            //textField.setText(String.valueOf());
+            String result = Compiler.semanticAnalysis();
+            String output;
+            if (result.equals("valid")) {
+                output = "The code passed Semantic Analysis.";
+            } else {
+                output = "The code is semantically incorrect!!";
+            }
+            updateTextField(output);
         }
         if(e.getSource()== clear) {
             // if clrButton is pressed, it will set the text to empty or just nothing
@@ -202,4 +175,6 @@ public class TextEditor extends JFrame implements ActionListener {
     private void updateTextField(String result) {
         textField.setText(result);
     }
+
+
 }
