@@ -48,6 +48,7 @@ public class GUI extends JFrame implements ActionListener{
 
 
         //------ text editor ----------------
+
         sourceCode = new JTextArea();
         sourceCode.setLineWrap(true);
         sourceCode.setWrapStyleWord(true);
@@ -60,10 +61,11 @@ public class GUI extends JFrame implements ActionListener{
         scrollPane = new JScrollPane(sourceCode);
         scrollPane.setPreferredSize(new Dimension(350,200));
         scrollPane.setVerticalScrollBarPolicy(ScrollPaneConstants.VERTICAL_SCROLLBAR_ALWAYS);
+
         //------ text editor ----------------
 
         //------ file opener ----------------
-        fileOpener = new JButton();
+
         fileOpener = new JButton("File");
         fileOpener.setBackground(Color.darkGray);
         fileOpener.setForeground(Color.cyan);
@@ -73,34 +75,37 @@ public class GUI extends JFrame implements ActionListener{
 
 
         //------ lexical ----------------
-        lexicalAnalyzer = new JButton();
+
         lexicalAnalyzer = new JButton("Lexical");
         lexicalAnalyzer.setBackground(Color.darkGray);
         lexicalAnalyzer.setForeground(Color.cyan);
         lexicalAnalyzer.addActionListener(this);
+        lexicalAnalyzer.setEnabled(false);
 
         //------ lexical ----------------
 
         //------ syntax ----------------
-        syntaxAnalyzer = new JButton();
+
         syntaxAnalyzer = new JButton("Syntax");
         syntaxAnalyzer.setBackground(Color.darkGray);
         syntaxAnalyzer.setForeground(Color.cyan);
         syntaxAnalyzer.addActionListener(this);
+        syntaxAnalyzer.setEnabled(false);
 
         //------ syntax ----------------
 
         //------ semantics ----------------
-        semanticsAnalyzer = new JButton();
+
         semanticsAnalyzer = new JButton("Semantic");
         semanticsAnalyzer.setBackground(Color.darkGray);
         semanticsAnalyzer.setForeground(Color.cyan);
         semanticsAnalyzer.addActionListener(this);
+        semanticsAnalyzer.setEnabled(false);
+
         //------ semantics ----------------
 
         //------ clear button ----------------
 
-        clear = new JButton();
         clear = new JButton("Clear");
         clear.setBackground(Color.darkGray);
         clear.setForeground(Color.cyan);
@@ -131,7 +136,10 @@ public class GUI extends JFrame implements ActionListener{
         if(e.getSource()==fileOpener){
             String output = Compiler.openFile();
             sourceCode.setText(output);
+            lexicalAnalyzer.setEnabled(true);
+            fileOpener.setEnabled(false);
         }
+
         if(e.getSource()==lexicalAnalyzer){
 
             String result = Compiler.lexicalAnalysis();
@@ -141,21 +149,26 @@ public class GUI extends JFrame implements ActionListener{
                 output = "There is an invalid lexeme, cannot be put into token.";
             } else {
                 output = "The code passed Lexical Analysis";
+                syntaxAnalyzer.setEnabled(true);
             }
+            lexicalAnalyzer.setEnabled(false);
             updateTextField(output);
         }
+
         if(e.getSource() == syntaxAnalyzer){
             String result = Compiler.syntaxAnalysis();
             String output;
             if (result.equals("valid")) {
+                semanticsAnalyzer.setEnabled(true);
                 output = "The code passed Syntax Analysis.";
             } else {
                 output = "Syntax incorrect!";
             }
+            syntaxAnalyzer.setEnabled(false);
             updateTextField(output);
         }
-        if (e.getSource() == semanticsAnalyzer)
-        {
+
+        if (e.getSource() == semanticsAnalyzer) {
             String result = Compiler.semanticAnalysis();
             String output;
             if (result.equals("valid")) {
@@ -163,18 +176,23 @@ public class GUI extends JFrame implements ActionListener{
             } else {
                 output = "The code is semantically incorrect!!";
             }
+            semanticsAnalyzer.setEnabled(false);
             updateTextField(output);
         }
+
         if(e.getSource()== clear) {
             // if clrButton is pressed, it will set the text to empty or just nothing
             sourceCode.setText("");
             textField.setText("");
+            fileOpener.setEnabled(true);
+            lexicalAnalyzer.setEnabled(false);
+            syntaxAnalyzer.setEnabled(false);
+            semanticsAnalyzer.setEnabled(false);
         }
 
     }
     private void updateTextField(String result) {
         textField.setText(result);
     }
-
 
 }

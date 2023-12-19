@@ -11,18 +11,19 @@ import java.util.regex.Pattern;
 
 public class Compiler {
 
-    public static List<String> lexemes = new ArrayList<>();
-    public static List<String> tokens = new ArrayList<>();
+    public static List<List<String>> linesOfCode = new ArrayList<>();
+    public static List<List<String>> linesOfTokens = new ArrayList<>();
 
     public static String semanticAnalysis() {
 
-            Pattern pattern;
-            String dataType = lexemes.get(tokens.indexOf("<data_type>"));
-            String value = lexemes.get(tokens.indexOf("<value>"));
+        Pattern pattern;
+        boolean isValid = true;
 
-            // For testing if the data type is corrected determined
-            //System.out.println(dataType);
-            // To set the pattern to match based on the data type
+        for (int i = 0; i<linesOfCode.size(); i++){
+            List<String> codeLine = linesOfCode.get(i);
+            List<String> tokenLine = linesOfTokens.get(i);
+            String dataType = codeLine.get(tokenLine.indexOf("<data_type>"));
+            String value = codeLine.get(tokenLine.indexOf("<value>"));
 
             switch (dataType) {
                 case "int" -> pattern = Pattern.compile("^-?\\d+$");
@@ -34,43 +35,47 @@ public class Compiler {
             }
 
             assert pattern != null;
-            boolean isValid = false;
             Matcher matcher= pattern.matcher(value);
 
             boolean matchFound = matcher.find();
 
-            if (matchFound){
-                isValid = true;
+            if (!matchFound){
+                isValid = false;
             }
-
-            if (isValid){
-                return "valid";
-            } else {
-                return "invalid";
-            }
-
         }
+
+        if (isValid){
+            return "valid";
+        } else {
+            return "invalid";
+        }
+
+    }
 
     public static String syntaxAnalysis() {
 
         boolean isValid = true;
 
         //<data_type> <identifier> <assignment_operator> <value> <delimiter>
-
         String[] syntax = {"<data_type>", "<identifier>", "<assignment_operator>", "<value>", "<delimiter>"};
 
+        for (List<String> lineOfTokens : linesOfTokens) {
 
-        if (tokens.size() == 5){
-            for(int i = 0; i<5; i++) {
+            if (lineOfTokens.size() == 5) {
+                for (int j = 0; j < 5; j++) {
 
-                boolean match = Objects.equals(tokens.get(i), syntax[i]);
+                    boolean match = Objects.equals(lineOfTokens.get(j), syntax[j]);
 
-                if (!match) {
-                    isValid = false;
-                    break;
+                    if (!match) {
+                        isValid = false;
+                        break;
+                    }
+
                 }
-
+            } else {
+                isValid = false;
             }
+
         }
 
         if (isValid){
@@ -80,14 +85,29 @@ public class Compiler {
         }
     }
 
+    public static void lotChecker() {
+
+        for (List<String> tokenLine : linesOfTokens) {
+            for (String token : tokenLine) {
+                System.out.print(token + " ");
+            }
+            System.out.println();
+        }
+
+    }
+
     public static String lexicalAnalysis(){
 
-            String[] regEx = {"int|double|float|char|String", "=", ";", "(^-?\\d+$)|(^\".*\"$)|(^'[a-zA-Z]'$)|(^-?\\d*\\.?\\d+\\.?$)|(^-?\\d*\\.?\\d+\\.?f$)","([a-zA-Z_$][a-zA-Z0-9_$]*)"};
-            String[] tokenName = {"data_type", "assignment_operator", "delimiter", "value", "identifier"};
+        String[] regEx = {"int|double|float|char|String", "=", ";", "(^-?\\d+$)|(^\".*\"$)|(^'[a-zA-Z]'$)|(^-?\\d*\\.?\\d+\\.?$)|(^-?\\d*\\.?\\d+\\.?f$)","(^[a-zA-Z_$][a-zA-Z0-9_$]*$)"};
+        String[] tokenName = {"data_type", "assignment_operator", "delimiter", "value", "identifier"};
 
-            boolean isValid = true;
+        boolean isValid = true;
 
-            for (String lexeme : lexemes) {
+        for (List<String> codeLine : linesOfCode) {
+
+            List<String> tokenLine = new ArrayList<>();
+
+            for (String lexeme : codeLine){
                 boolean isfound = false;
                 boolean isDataType = false;
 
@@ -106,11 +126,10 @@ public class Compiler {
                         }
 
                         if (i<4){
-                            tokens.add("<" + tokenName[i] + ">");
+                            tokenLine.add("<" + tokenName[i] + ">");
                         } else {
                             if (!isDataType){
-                                tokens.add("<" + tokenName[i] + ">");
-
+                                tokenLine.add("<" + tokenName[i] + ">");
                             }
                         }
                     }
@@ -118,23 +137,61 @@ public class Compiler {
 
                 if (!isfound) {
                     isValid = false;
-                    //validate = "There is an invalid lexeme, cannot be put into token";
-                    //return validate;
                     System.out.println("Invalid lexeme: " + lexeme);
                 }
-            }
 
-            if (isValid) {
-                return "valid";
-                // For checking
-                //System.out.println(tokens);
-                //validate = "The code passed Lexical Analysis";
-                //return validate;
-            } else {
-                return "invalid";
+            }
+            linesOfTokens.add(tokenLine);
+        }
+
+        lotChecker();
+
+        if (isValid) {
+            return "valid";
+        } else {
+            return "invalid";
+        }
+
+    }
+
+    public static void locChecker() {
+
+        for (List<String> codeLine : linesOfCode) {
+            for (String lexeme : codeLine) {
+                System.out.print("<" + lexeme  + "> ");
+            }
+            System.out.println();
+        }
+
+    }
+
+    public static List<String> separateCode(String code) {
+
+        List<String> lexemes = new ArrayList<>();
+
+        Pattern pattern = Pattern.compile("(=)|(;)|(\".*\")|('.*')|([^\\s=;]+)");
+
+        Matcher matcher = pattern.matcher(code);
+
+        while (matcher.find()) {
+
+            String lexeme = matcher.group();
+
+            if (!lexeme.matches("\\s*")) {
+
+                lexemes.add(lexeme);
+
             }
 
         }
+
+        // For checking
+
+        //System.out.println(lexemes);
+
+        return lexemes;
+
+    }
 
     public static String openFile() {
         JFileChooser fileChooser = new JFileChooser();
@@ -157,11 +214,12 @@ public class Compiler {
 
                     while (fileScanner.hasNextLine()) {
                         String codeLine = fileScanner.nextLine();
-                        System.out.println(codeLine);
                         output.append(codeLine).append("\n");
-                        lexemes = Compiler.separateCode(codeLine);
-                        System.out.println(lexemes);
+                        List<String> lexemes = separateCode(codeLine);
+                        linesOfCode.add(lexemes);
                     }
+
+                    locChecker();
 
                 }
 
@@ -173,34 +231,5 @@ public class Compiler {
         return output.toString();
 
     }
-
-    public static List<String> separateCode(String code) {
-
-            List<String> lexemes = new ArrayList<>();
-
-            Pattern pattern = Pattern.compile("(;)|(=)|(\".*\")|('[a-zA-Z]')|(-?\\d*\\.?\\d+\\.?f)|([a-zA-Z_$][a-zA-Z0-9_$]*)|(-?\\d*\\.?\\d+\\.?)");
-
-            Matcher matcher = pattern.matcher(code);
-
-            while (matcher.find()) {
-
-                String lexeme = matcher.group();
-
-                if (!lexeme.matches("\\s*")) {
-
-                    lexemes.add(lexeme);
-
-                }
-
-            }
-
-            // For checking
-
-            //System.out.println(lexemes);
-
-            return lexemes;
-
-        }
-
 
 }
