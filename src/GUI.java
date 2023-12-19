@@ -184,6 +184,10 @@ public class GUI extends JFrame implements ActionListener{
             // if clrButton is pressed, it will set the text to empty or just nothing
             sourceCode.setText("");
             textField.setText("");
+            fileOpener.setEnabled(true);
+            lexicalAnalyzer.setEnabled(false);
+            syntaxAnalyzer.setEnabled(false);
+            semanticsAnalyzer.setEnabled(false);
         }
 
     }
