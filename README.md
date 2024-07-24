@@ -1,4 +1,4 @@
-# Mini Compiler (TESTING)
+# Mini Compiler
 
 A mini compiler project created by **Jhan Ellen Atole, Chryzle Amualla,** and **Marianne Dale Garcia**
 
